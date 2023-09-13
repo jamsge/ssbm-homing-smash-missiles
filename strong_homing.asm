@@ -49,7 +49,7 @@ lwz r5, 0x2c(r3) # get pointer to gobj user data into r5
 lwz r6, 0x0(r5) # r6 has missile 1 address (starts at 0)
 lwz r7, 0x4(r5) # r7 has missile 2 address (starts at 0)
 
-load r8, 0x803fc420
+load r8, 0x803fc420 # TODO: NEED TO OFFSET THIS BY 8*zeroIndexedPlayerSlot
 lwz r9, 0x0(r8) # r9 contains latest item spawn
 
 cmpw r6, r9
