@@ -1,0 +1,28 @@
+9/10/2023 --- find entry point for code, just try to play a menu sound. Samus_CreateMissle?
+https://smashboards.com/threads/item-related-codes.401689/post-19140122
+802b6a60 - function related to creating missile, r3 offset 0x2c -> missile enitity!
+maybe when missile is spawned, store the memory address to it in a memalloc address (need up to 3)
+create gobj with g_proc function using gobj_addproc. this process will check if there are missiles, and
+if there are, change their position to make them home in on the enemy
+
+need to check the free memory spot if the projectile belongs to the player
+
+
+
+process:
+
+80268B18 - spawn entity function, returns pointer to entity gobj in r3. 
+Use 0x2c offset to get to entity data, store pointer to entity data
+
+For entity data:
+Check if it's a super missile (0x10 = offset for item type, should be 0x5F)
+0x518 = offset for pointer to player entity data struct, 
+0x2c in this struct points to player character data, 
+then 0x0C should be player slot (0-indexed)
+
+if player slot == 0, target becomes 1
+if player slot == 1, target becomes 0
+
+Static block starting at 0x80453080 for P1, 80453F10 for P2
+
+from static block, 0x14 is nametage position y value
