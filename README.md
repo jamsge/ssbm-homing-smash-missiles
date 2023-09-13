@@ -2,4 +2,4 @@ This repository holds the PPC assembly codebase for the implementation of homing
 
 
 
-The gecko code can be built using `gecko build`
+The gecko code can be built using `gecko assemble`
