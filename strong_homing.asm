@@ -42,30 +42,60 @@ b end
  
 # # # # # # # # # # # # # # # # # # # # # 
 
+# 80669fb4, (8066a00c), 81 1E 23 B4 = homing miss dat, 
 check_mem_for_missile:
 blrl
 backup
 lwz r5, 0x2c(r3) # get pointer to gobj user data into r5
-lwz r6, 0x0(r5) # r6 has missile 1 address (starts at 0)
-lwz r7, 0x4(r5) # r7 has missile 2 address (starts at 0)
+mr r6, r5 # r6 has missile 1 address (starts at 0)
+addi r5, r5, 0x4
+mr r7, r5 # r7 has missile 2 address (starts at 0)
 
-load r8, 0x803fc420 # TODO: NEED TO OFFSET THIS BY 8*zeroIndexedPlayerSlot
+load r8, 0x803fc420 # TODO: NEED TO OFFSET THIS BY 8*zeroIndexedPlayerSlot (or just do it twice via loop and offset it the second time?)
 lwz r9, 0x0(r8) # r9 contains latest item spawn
+lwz r10, 0x4(r8) # r10 contains 0 or 1 denoting whether to use missile 1 or 2
 
-cmpw r6, r9
+cmpwi r10, 1
+beq stwmissile1
+stwmissile0:
+stw r9, 0x0(r6)
+b skip
+stwmissile1:
+stw r9, 0x0(r7)
+skip:
+
+# Below changes x vel and x position to 0. Why doesn't it work?????
+li r8, 0
+lwz r11, 0x0(r6)
+cmpw r11, r8
 beq skip1
-
-# missile homing function here
-branchl r12, 0x80174338
-
+lwz r3, 0x0(r6)
+lbz r4, 0xDD7(r3) # Homing missile is 0, super missile is 1
+lwz r5, 0x10(r3) # Item type, 5F is missile
+cmpwi r4, 1
+bne skip1
+cmpwi r5, 0x5f
+bne skip1
+# below should be the homing logic
+stw r8, 0x40(r3)
+stw r8, 0x4c(r3)
 skip1:
-cmpw r7, r9
+
+lwz r11, 0x0(r7)
+cmpw r11, r8
 beq skip2
-
-# missile homing function here
-branchl r12, 0x80174338
-
+lwz r3, 0x0(r7)
+lbz r4, 0xDD7(r3) # Homing missile is 0, super missile is 1
+lwz r5, 0x10(r3) # Item type, 5F is missile
+cmpwi r4, 1
+bne skip2
+cmpwi r5, 0x5f
+bne skip2
+stw r8, 0x40(r3)
+stw r8, 0x4c(r3)
 skip2:
+
+
 restore
 blr
 
