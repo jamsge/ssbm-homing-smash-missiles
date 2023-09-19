@@ -64,25 +64,11 @@ stwmissile1:
 stw r9, 0x0(r7)
 skip:
 
-load r18, 0x40a00000
-# Below changes x vel and x position to 0. Why doesn't it work?????
-li r8, 0
-lwz r11, 0x0(r6)
-cmpw r11, r8
-beq skip1
-lwz r3, 0x0(r6)
-lbz r4, 0xDD7(r3) # Homing missile is 0, super missile is 1
-lwz r5, 0x10(r3) # Item type, 5F is missile
-cmpwi r4, 1
-bne skip1
-cmpwi r5, 0x5f
-bne skip1
-lwz r16, 0x518(r3) # pointer to owner character data
-lwz r17, 0xB4(r16) # character y position
-# below should be the homing logic
-# stw r17, 0x50(r3)
-skip1:
 
+li r8, 0 # for comparisons with 0
+li r31, 0 # counter for first and second missile
+
+missile_func_begin:
 lwz r11, 0x0(r7)
 cmpw r11, r8
 beq skip2
@@ -125,8 +111,15 @@ b skip2
 m2subheight:
 fsub f17, f17, f19
 stfs f17, 0x50(r3)
-b skip2
 skip2:
+
+cmpwi r31, 0x1
+beq missile_func_end
+mr r7, r6
+addi r31, r31, 0x1
+bne missile_func_begin
+
+missile_func_end:
 
 
 restore
