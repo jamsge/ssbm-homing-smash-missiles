@@ -64,6 +64,7 @@ stwmissile1:
 stw r9, 0x0(r7)
 skip:
 
+load r18, 0x40a00000
 # Below changes x vel and x position to 0. Why doesn't it work?????
 li r8, 0
 lwz r11, 0x0(r6)
@@ -76,9 +77,10 @@ cmpwi r4, 1
 bne skip1
 cmpwi r5, 0x5f
 bne skip1
+lwz r16, 0x518(r3) # pointer to owner character data
+lwz r17, 0xB4(r16) # character y position
 # below should be the homing logic
-stw r8, 0x40(r3)
-stw r8, 0x4c(r3)
+# stw r17, 0x50(r3)
 skip1:
 
 lwz r11, 0x0(r7)
@@ -87,17 +89,54 @@ beq skip2
 lwz r3, 0x0(r7)
 lbz r4, 0xDD7(r3) # Homing missile is 0, super missile is 1
 lwz r5, 0x10(r3) # Item type, 5F is missile
-cmpwi r4, 1
+cmpwi r5, 0x5f # skip if not missile
 bne skip2
-cmpwi r5, 0x5f
+cmpwi r4, 1 # skip if not super missile
 bne skip2
-stw r8, 0x40(r3)
-stw r8, 0x4c(r3)
+lwz r16, 0x518(r3) # pointer to owner character data
+lbz r20, 0x0C(r16) # get player slot index
+cmpwi r20, 0
+bne m2p2
+m2p1: # this missile belongs to player 1
+load r20, 0x80453F10 # load static address of p2
+lwz r20, 0xB0(r20) # player entity struct
+lwz r20, 0x2C(r20) # player character data
+b m2endload
+m2p2: # this missile belongs to player 2
+load r20, 0x80453080 # load static address of p1
+lwz r20, 0xB0(r20)
+lwz r20, 0x2C(r20)
+m2endload:
+lfs f14, 0xB4(r20) # character y position
+bl my_floats
+mflr r25
+lfs f15, 0x4(r25) # get missile target offset value
+lfs f19, 0x8(r25) # get missile position increment
+fadd f16, f15, f14 # f16 = target Y value
+lfs f15, 0x8(r25) # get missile target offset value
+lfs f17, 0x50(r3) # get missile y value
+fcmpo cr0, f17, f16
+blt cr0, m2addheight
+bgt cr0, m2subheight
+m2addheight:
+fadd f17, f19, f17
+stfs f17, 0x50(r3)
+b skip2
+m2subheight:
+fsub f17, f17, f19
+stfs f17, 0x50(r3)
+b skip2
 skip2:
 
 
 restore
 blr
+
+my_floats:
+blrl
+.float 0 # 0x0 = 0
+.float 10.0 # 0x4 - missile target offset value
+.float 2 # 0x8 - speed
 
 # # # # # # # # # # # # # # # # # # # # # 
 
@@ -105,3 +144,4 @@ end:
 restore
 
 lbz	r3, 0 (r31)
+
