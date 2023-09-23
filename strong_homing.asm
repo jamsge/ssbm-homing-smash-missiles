@@ -99,17 +99,24 @@ mflr r25
 lfs f15, 0x4(r25) # get missile target offset value
 lfs f19, 0x8(r25) # get missile position increment
 fadd f16, f15, f14 # f16 = target Y value
-lfs f15, 0x8(r25) # get missile target offset value
+lfs f20, 0x12(r25) # get error threshold
 lfs f17, 0x50(r3) # get missile y value
-fcmpo cr0, f17, f16
+fadd f22, f16, f20 # upper bound threshold
+fsub f23, f16, f20 # lower bound threshold
+fcmpo cr0, f17, f23
 blt cr0, m2addheight
+fcmpo cr0, f17, f22
 bgt cr0, m2subheight
 m2addheight:
-fadd f17, f19, f17
+fsub f26, f16, f17 # calculate error
+fmul f26, f26, f19
+fadd f17, f17, f26
 stfs f17, 0x50(r3)
 b skip2
 m2subheight:
-fsub f17, f17, f19
+fsub f26, f16, f17 # calculate error
+fmul f26, f26, f19
+fadd f17, f17, f26
 stfs f17, 0x50(r3)
 skip2:
 
@@ -121,7 +128,6 @@ bne missile_func_begin
 
 missile_func_end:
 
-
 restore
 blr
 
@@ -129,7 +135,8 @@ my_floats:
 blrl
 .float 0 # 0x0 = 0
 .float 10.0 # 0x4 - missile target offset value
-.float 2 # 0x8 - speed
+.float 0.2 # 0x8 - speed
+.float 7 # maximum targetting error
 
 # # # # # # # # # # # # # # # # # # # # # 
 
