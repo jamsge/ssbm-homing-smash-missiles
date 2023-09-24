@@ -10,18 +10,20 @@ li r5, 0 # priority
 branchl r12, GObj_Create
 mr r31, r3 # gobj pointer gets put into r31
 
-li r3, 24 #data size # memory allocation size
+li r3, 64 #data size # memory allocation size
 branchl r12, HSD_MemAlloc
 mr r30, r3 # pointer to allocated memory at r30
 
 li r29, 0x0
-stw r29, 0x0(r30) # missile 1 address
-stw r29, 0x4(r30) # missile 2 address
+stw r29, 0x0(r30) # missile 1 address p1
+stw r29, 0x4(r30) # missile 2 address p1
+stw r29, 0x8(r30) # missile 1 address p2
+stw r29, 0xC(r30) # missile 2 address p2
 
 mr r3, r31 # gobj
 li r4, 0 # data_kind, ?
 load r5, HSD_Free # destructor
-mr r6, r30 # data
+mr r6, r30 # pointer returned from HSD_MemAlloc
 branchl r12, GObj_AddUserData
 
 mr r3, r31 # gobj as first argument

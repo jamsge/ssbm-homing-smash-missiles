@@ -12,7 +12,7 @@ lwz r27, 0x2c(r27) # get pointer to entity data
 lbz r27, 0x0c(r27) # 0x0c is the player slot, 0 indexed
 mulli r27, r27, 8 # shared address pointer + counter takes up 8 bytes
 add r29, r27, r29 # offset free memory address by 8*zeroIndexedPlayerSlot
-stw r30, 0x0(r29) # set shared mem to entity data of item
+stw r30, 0x0(r29) # set shared mem to entity address of item
 
 
 lwz r28, 0x4(r29) # get shared counter, alternates 0 and 1 on each. make one for each player?
