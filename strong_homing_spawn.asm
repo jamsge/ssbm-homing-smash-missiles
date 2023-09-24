@@ -15,7 +15,7 @@ add r29, r27, r29 # offset free memory address by 8*zeroIndexedPlayerSlot
 stw r30, 0x0(r29) # set shared mem to entity address of item
 
 
-lwz r28, 0x4(r29) # get shared counter, alternates 0 and 1 on each. make one for each player?
+lwz r28, 0x4(r29) # get shared counter value
 cmpwi r28, 1
 beq is1
 

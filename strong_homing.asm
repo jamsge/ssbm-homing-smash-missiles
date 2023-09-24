@@ -48,12 +48,17 @@ b end
 check_mem_for_missile:
 blrl
 backup
+li r27, 0x0
+main_loop:
 lwz r5, 0x2c(r3) # get pointer to gobj user data into r5
 mr r6, r5 # r6 has missile 1 address (starts at 0)
 addi r5, r5, 0x4
 mr r7, r5 # r7 has missile 2 address (starts at 0)
 
+
 load r8, 0x803fc420 # TODO: NEED TO OFFSET THIS BY 8*zeroIndexedPlayerSlot (or just do it twice via loop and offset it the second time?)
+mulli r28, r27, 0x8
+add r8, r8, r28
 lwz r9, 0x0(r8) # r9 contains latest item spawn
 lwz r10, 0x4(r8) # r10 contains 0 or 1 denoting whether to use missile 1 or 2
 
@@ -74,14 +79,14 @@ missile_func_begin:
 lwz r11, 0x0(r7)
 cmpw r11, r8
 beq skip2
-lwz r3, 0x0(r7)
-lbz r4, 0xDD7(r3) # Homing missile is 0, super missile is 1
-lwz r5, 0x10(r3) # Item type, 5F is missile
+lwz r26, 0x0(r7)
+lbz r4, 0xDD7(r26) # Homing missile is 0, super missile is 1
+lwz r5, 0x10(r26) # Item type, 5F is missile
 cmpwi r5, 0x5f # skip if not missile
 bne skip2
 cmpwi r4, 1 # skip if not super missile
 bne skip2
-lwz r16, 0x518(r3) # pointer to owner character data
+lwz r16, 0x518(r26) # pointer to owner character data
 lbz r20, 0x0C(r16) # get player slot index
 cmpwi r20, 0
 bne m2p2
@@ -102,7 +107,7 @@ lfs f15, 0x4(r25) # get missile target offset value
 lfs f19, 0x8(r25) # get missile position increment
 fadd f16, f15, f14 # f16 = target Y value
 lfs f20, 0x12(r25) # get error threshold
-lfs f17, 0x50(r3) # get missile y value
+lfs f17, 0x50(r26) # get missile y value
 fadd f22, f16, f20 # upper bound threshold
 fsub f23, f16, f20 # lower bound threshold
 fcmpo cr0, f17, f23
@@ -113,13 +118,13 @@ m2addheight:
 fsub f26, f16, f17 # calculate error
 fmul f26, f26, f19
 fadd f17, f17, f26
-stfs f17, 0x50(r3)
+stfs f17, 0x50(r26)
 b skip2
 m2subheight:
 fsub f26, f16, f17 # calculate error
 fmul f26, f26, f19
 fadd f17, f17, f26
-stfs f17, 0x50(r3)
+stfs f17, 0x50(r26)
 skip2:
 
 cmpwi r31, 0x1
@@ -130,6 +135,9 @@ bne missile_func_begin
 
 missile_func_end:
 
+addi r27, r27, 0x1
+cmpwi r27, 0x1
+ble main_loop
 restore
 blr
 
